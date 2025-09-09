@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany; // TIPO DE RELACIONAMENTO
 
 class NaturezaJuridica extends Model // DEFINIÇÃO DA CLASSE NATUREZA JURÍDICA
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'naturezas_juridicas'; // NOME DA TABELA
     protected $primaryKey = 'codigo'; // CHAVE PRIMÁRIA
     public $incrementing = false; // CHAVE PRIMÁRIA NÃO É AUTOINCREMENTAL

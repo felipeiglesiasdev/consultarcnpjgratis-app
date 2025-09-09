@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany; // TIPO DE RELACIONAMENTO
 
 class Cnae extends Model // DEFINIÇÃO DA CLASSE CNAE
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'cnaes'; // NOME DA TABELA
     protected $primaryKey = 'codigo'; // CHAVE PRIMÁRIA
     public $incrementing = false; // CHAVE PRIMÁRIA NÃO É AUTOINCREMENTAL

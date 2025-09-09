@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany; // TIPO DE RELACIONAMENTO
 
 class Pais extends Model // DEFINIÇÃO DA CLASSE PAIS
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'paises'; // NOME DA TABELA
     protected $primaryKey = 'codigo'; // CHAVE PRIMÁRIA
     public $incrementing = false; // CHAVE PRIMÁRIA NÃO É AUTOINCREMENTAL

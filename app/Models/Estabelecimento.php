@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo; // TIPO DE RELACIONAMENTO
 
 class Estabelecimento extends Model // DEFINIÇÃO DA CLASSE ESTABELECIMENTO
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'estabelecimentos'; // NOME DA TABELA
     protected $primaryKey = null; // CHAVE PRIMÁRIA NULA DEVIDO A SER COMPOSTA
     public $incrementing = false; // DESATIVA O AUTOINCREMENTO

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo; // TIPO DE RELACIONAMENTO
 
 class Empresa extends Model // DEFINIÇÃO DA CLASSE EMPRESA
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'empresas'; // NOME DA TABELA
     protected $primaryKey = 'cnpj_basico'; // CHAVE PRIMÁRIA
     protected $keyType = 'string'; // TIPO DA CHAVE PRIMÁRIA

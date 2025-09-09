@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo; // TIPO DE RELACIONAMENTO
 
 class Simples extends Model // DEFINIÇÃO DA CLASSE SIMPLES
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'simples'; // NOME DA TABELA
     protected $primaryKey = 'cnpj_basico'; // CHAVE PRIMÁRIA
     protected $keyType = 'string'; // TIPO DA CHAVE PRIMÁRIA

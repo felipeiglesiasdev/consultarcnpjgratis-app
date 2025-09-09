@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany; // TIPO DE RELACIONAMENTO
 
 class QualificacaoSocio extends Model // DEFINIÇÃO DA CLASSE QUALIFICAÇÃO SÓCIO
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'qualificacoes_socios'; // NOME DA TABELA
     protected $primaryKey = 'codigo'; // CHAVE PRIMÁRIA
     public $incrementing = false; // CHAVE PRIMÁRIA NÃO É AUTOINCREMENTAL

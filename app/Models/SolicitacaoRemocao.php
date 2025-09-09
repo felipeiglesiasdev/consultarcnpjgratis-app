@@ -9,6 +9,7 @@ class SolicitacaoRemocao extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mysql_dados';
     /**
      * The table associated with the model.
      *

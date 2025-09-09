@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo; // TIPO DE RELACIONAMENTO
 
 class Socio extends Model // DEFINIÇÃO DA CLASSE SOCIO
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'socios'; // NOME DA TABELA
     public $timestamps = false; // DESATIVA TIMESTAMPS
 

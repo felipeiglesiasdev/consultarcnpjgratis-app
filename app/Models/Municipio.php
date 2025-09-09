@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany; // TIPO DE RELACIONAMENTO
 
 class Municipio extends Model // DEFINIÇÃO DA CLASSE MUNICIPIO
 {
+    protected $connection = 'mysql_dados';
     protected $table = 'municipios'; // NOME DA TABELA
     protected $primaryKey = 'codigo'; // CHAVE PRIMÁRIA
     public $incrementing = false; // CHAVE PRIMÁRIA NÃO É AUTOINCREMENTAL

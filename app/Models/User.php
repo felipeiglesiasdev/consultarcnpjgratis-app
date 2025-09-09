@@ -11,7 +11,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
-
+    protected $table = 'consultarcnpjgratis_users'; // <-- Adicione esta linha
     /**
      * The attributes that are mass assignable.
      *
