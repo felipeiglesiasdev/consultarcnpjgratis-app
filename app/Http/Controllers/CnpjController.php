@@ -12,38 +12,59 @@ use Illuminate\View\View;
 
 class CnpjController extends Controller
 {
-    /**
-     * Processa o formulário de consulta.
-     * Se encontrar, redireciona. Se não, volta com erro para o popup.
-     */
+    private function findValidEstabelecimento(string $cnpj): ?Empresa
+    {
+        // 1. Desmonta o CNPJ em suas partes
+        $cnpjBase = substr($cnpj, 0, 8);
+        $cnpjOrdem = substr($cnpj, 8, 4);
+        $cnpjDv = substr($cnpj, 12, 2);
+
+        // 3. Regra de Existência: Procura pelo estabelecimento exato.
+        // Isso garante que o cnpj_ordem e cnpj_dv também correspondem.
+        $estabelecimento = Estabelecimento::where('cnpj_basico', $cnpjBase)
+            ->where('cnpj_ordem', $cnpjOrdem)
+            ->where('cnpj_dv', $cnpjDv)
+            ->first(); // Pega o primeiro (e único) resultado
+
+
+        // 4. Se encontrou o estabelecimento e ele é único (passou na regra 2),
+        // busca a Razão Social na tabela de empresas através da relação.
+        if ($estabelecimento) {
+            return Empresa::find($estabelecimento->cnpj_basico);
+        }
+
+        return null; // Retorna nulo se não encontrar o estabelecimento exato.
+    }
+    //################################################################################################
+    //################################################################################################
+    // Processa o formulário de consulta.
+    // Se encontrar, redireciona. Se não, volta com erro para o popup.
     public function consultar(Request $request): RedirectResponse
     {
-        // 1. Validação do formato do CNPJ
-        $cnpjApenasNumeros = preg_replace('/[^0-9]/', '', $request->input('cnpj'));
-        $validator = Validator::make(['cnpj' => $cnpjApenasNumeros], [
-            'cnpj' => ['required', 'string', 'size:14']
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+        // 1. Valida se o campo cnpj foi enviado
+        $request->validate(['cnpj' => 'required|string|max:18']);
+        // 2. Limpa o CNPJ, removendo qualquer formatação
+        $cnpjLimpo = preg_replace('/[^0-9]/', '', $request->input('cnpj'));
+        // 3. Validação de formato: verifica se o CNPJ tem 14 dígitos
+        if (strlen($cnpjLimpo) !== 14) {
+            // Se o formato for inválido, retorna para a home com o erro para o popup.
+            return redirect()->route('home')
+                             ->with('error', 'CNPJ inválido. Por favor, digite os 14 números do CNPJ.');
         }
 
         // 2. Verifica se o CNPJ é válido de acordo com as novas regras
-        $empresa = $this->findValidEstabelecimento($cnpjApenasNumeros);
+        $empresa = $this->findValidEstabelecimento($cnpjLimpo);
 
         // 3. Lógica de redirecionamento
         if ($empresa) {
             // SE EXISTE E É VÁLIDO: Redireciona para a página de exibição
-            return redirect()->route('cnpj.show', ['cnpj' => $cnpjApenasNumeros]);
+            return redirect()->route('cnpj.show', ['cnpj' => $cnpjLimpo]);
         } else {
             // SE NÃO EXISTE OU NÃO É VÁLIDO: Volta com erro para o popup
-            return back()->with('error', 'CNPJ não encontrado ou não é matriz.')->withInput();
+            return redirect()->route('home')->with('error', 'CNPJ não encontrado em nossa base de dados.');
         }
     }
 
-    /**
-     * Exibe os dados de um CNPJ a partir da URL (SEO-friendly).
-     */
     public function show(string $cnpj): View
     {
         $cnpjApenasNumeros = preg_replace('/[^0-9]/', '', $cnpj);
@@ -171,9 +192,9 @@ class CnpjController extends Controller
             'og:description' => 'Consulte gratuitamente os dados cadastrais da empresa ' . $empresa->razao_social . ', incluindo CNPJ, endereço, atividades e situação cadastral.',
             'og:url' => url()->current(),
             'og:type' => 'website',
-            'og:site_name' => 'CNPJ Total', // Ou o nome do seu site
+            'og:site_name' => 'Consultar CNPJ Gratis', // Ou o nome do seu site
             'og:locale' => 'pt_BR',
-            'og:image' => asset('images/logo/logo-preto-vermelho.webp'),
+            'og:image' => asset('images/social-tag-og.png'),
             'og:image:type' => 'image/png', 
             'og:image:width' => '1080',      
             'og:image:height' => '1080',     
@@ -181,7 +202,7 @@ class CnpjController extends Controller
         // --- FIM DA PREPARAÇÃO OG ---
 
         $metaData = [
-            'description' => 'Consulte informações completas sobre a empresa' . $empresa->razao_social
+            'description' => 'Consulte informações completas sobre a empresa ' . $empresa->razao_social
                         . ', CNPJ ' . $this->formatarCnpj($cnpjApenasNumeros)
                         . '.',
             
@@ -254,9 +275,6 @@ class CnpjController extends Controller
         return view('cnpj.show', ['data' => $dadosParaExibir]);
     }
 
-    /**
-     * Formata o código CNAE.
-     */
     private function formatarCnae(string $codigo): string
     {
         return vsprintf('%s%s%s%s-%s/%s%s', str_split($codigo));
@@ -276,9 +294,6 @@ class CnpjController extends Controller
         }
     }
 
-    /**
-     * Traduz o código da situação cadastral e retorna o texto e uma classe CSS.
-     */
     private function traduzirSituacaoCadastral(int $codigo): array
     {
         switch ($codigo) {
@@ -295,48 +310,6 @@ class CnpjController extends Controller
         }
     }
 
-    /**
-     * Função central que aplica as novas regras de negócio para encontrar um CNPJ válido.
-     *
-     * @param string $cnpj
-     * @return Empresa|null
-     */
-    private function findValidEstabelecimento(string $cnpj): ?Empresa
-    {
-        // 1. Desmonta o CNPJ em suas partes
-        $cnpjBase = substr($cnpj, 0, 8);
-        $cnpjOrdem = substr($cnpj, 8, 4);
-        $cnpjDv = substr($cnpj, 12, 2);
-
-        // 2. Regra das Filiais: Verifica quantos estabelecimentos existem para a raiz (CNPJ base).
-        // Se for mais de 1, significa que tem filiais, então consideramos "não encontrado".
-        $countFiliais = Estabelecimento::where('cnpj_basico', $cnpjBase)->count();
-        if ($countFiliais > 1) {
-            return null; // Rejeita CNPJs com filiais para evitar conteúdo duplicado.
-        }
-
-        // 3. Regra de Existência: Procura pelo estabelecimento exato.
-        // Isso garante que o cnpj_ordem e cnpj_dv também correspondem.
-        $estabelecimento = Estabelecimento::where('cnpj_basico', $cnpjBase)
-            ->where('cnpj_ordem', $cnpjOrdem)
-            ->where('cnpj_dv', $cnpjDv)
-            ->first(); // Pega o primeiro (e único) resultado
-
-        // 4. Se encontrou o estabelecimento e ele é único (passou na regra 2),
-        // busca a Razão Social na tabela de empresas através da relação.
-        if ($estabelecimento) {
-            // O Laravel carrega a relação automaticamente se estiver definida no Model.
-            // Se a relação não estiver definida, usamos a busca manual.
-            return Empresa::find($estabelecimento->cnpj_basico);
-        }
-
-        return null; // Retorna nulo se não encontrar o estabelecimento exato.
-    }
-
-
-    /**
-     * Função auxiliar para formatar o CNPJ.
-     */
     private function formatarCnpj(string $cnpj): string
     {
         return vsprintf('%s.%s.%s/%s-%s', [
@@ -345,17 +318,11 @@ class CnpjController extends Controller
         ]);
     }
 
-    /**
-     * Encontra empresas semelhantes com base no CNAE e localização,
-     * garantindo que as semelhantes também sejam matrizes sem filiais.
-     *
-     * @param \App\Models\Estabelecimento $estabelecimento
-     * @return array
-     */
     private function findSimilarCompanies(Estabelecimento $estabelecimento): array
     {
         $cnaePrincipal = $estabelecimento->cnae_fiscal_principal;
         $municipio = $estabelecimento->municipio;
+        $situacao_cadastral = $estabelecimento->situacao_cadastral;
         $uf = $estabelecimento->uf;
         $cnpjBaseAtual = $estabelecimento->cnpj_basico;
         $limit = 8;
@@ -369,6 +336,7 @@ class CnpjController extends Controller
         $semelhantesNaCidade = Estabelecimento::where('cnae_fiscal_principal', $cnaePrincipal)
             ->where('municipio', $municipio)
             ->where('cnpj_basico', '!=', $cnpjBaseAtual)
+            ->where('situacao_cadastral', '=', 2)
             // APLICA A REGRA DE VALIDAÇÃO:
             ->whereHas('empresa', $validationRule)
             ->with('empresa:cnpj_basico,razao_social')
@@ -397,11 +365,7 @@ class CnpjController extends Controller
         return $this->formatSimilarCompanies($empresasSemelhantes);
     }
 
-     
 
-    /**
-     * Formata a coleção de empresas semelhantes para a view.
-     */
     private function formatSimilarCompanies($collection): array
     {
         return $collection->map(function ($est) {

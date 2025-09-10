@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Consultar CNPJ Grátis - Rápido, Online e Confiável')
+@push('seo')
+<title>Consultar CNPJ Grátis - Rápido, Online e Confiável</title>
+<meta name="robots" content="index, follow">
+@endpush
 
 @section('content')
 
@@ -14,12 +17,12 @@
             Obtenha informações completas e atualizadas de empresas, direto da base de dados da Receita Federal.
         </p>
         
-        <form action="#" method="POST" class="max-w-xl mx-auto">
+        <form action="{{ route('cnpj.consultar') }}" method="POST" class="max-w-xl mx-auto">
             @csrf
             <div class="flex flex-col sm:flex-row items-center gap-2">
                 <input 
                     type="search" 
-                    name="cnpj_principal" 
+                    name="cnpj" 
                     data-mask="cnpj"
                     class="w-full px-5 py-4 text-gray-900 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#94f4a6] focus:border-transparent"
                     placeholder="Digite o CNPJ (apenas números)"

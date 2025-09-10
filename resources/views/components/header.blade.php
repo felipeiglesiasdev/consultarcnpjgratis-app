@@ -17,7 +17,7 @@
             </div>
             <div class="flex items-center">
                 <div class="hidden md:block">
-                    <form action="#" method="POST" class="flex items-center space-x-2">
+                    <form action="{{ route('cnpj.consultar') }}" method="POST" class="flex items-center space-x-2">
                         @csrf
                         <input type="search" name="cnpj" data-mask="cnpj" id="cnpj-header-input" class="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#94f4a6] focus:border-[#94f4a6] sm:text-sm transition-colors duration-300 text-gray-900" placeholder="00.000.000/0000-00">
                         <button type="submit" class="px-5 py-2 border border-transparent text-sm font-medium rounded-md text-[#171717] bg-[#94f4a6] hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#94f4a6] cursor-pointer transform transition-all duration-200 hover:-translate-y-0.5" title="Buscar CNPJ">
@@ -47,9 +47,9 @@
          x-transition:leave-start="opacity-100 transform translate-y-0"
          x-transition:leave-end="opacity-0 transform -translate-y-2">
         <div class="px-4 pt-4 pb-6 space-y-4">
-            <form action="#" method="POST" class="flex items-center space-x-2">
+            <form action="{{ route('cnpj.consultar') }}" method="POST" class="flex items-center space-x-2">
                 @csrf
-                <input type="search" id="cnpj-header-input" data-mask="cnpj" name="cnpj_mobile" class="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#94f4a6] focus:border-[#94f4a6] text-gray-900" placeholder="Digite o CNPJ">
+                <input type="search" id="cnpj-header-input" data-mask="cnpj" name="cnpj" class="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#94f4a6] focus:border-[#94f4a6] text-gray-900" placeholder="Digite o CNPJ">
                 <button type="submit" class="px-5 py-2 border border-transparent text-sm font-medium rounded-md text-[#171717] bg-[#94f4a6] hover:bg-opacity-80">
                     Buscar
                 </button>
