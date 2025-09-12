@@ -10,7 +10,7 @@ class GenerateSitemap extends Command
 {
     protected $signature = 'sitemap:generate {--limit=0 : Limita o número total de CNPJs a serem incluídos. 0 para todos.}';
     protected $description = 'Gera os arquivos de sitemap estáticos na pasta /public';
-    private $limitPerFile = 50000; // Máximo de URLs por arquivo XML
+    private $limitPerFile = 15; // Máximo de URLs por arquivo XML
 
     public function handle()
     {
