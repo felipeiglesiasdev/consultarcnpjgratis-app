@@ -148,32 +148,70 @@ class DirectoryController extends Controller
         return view('pages.directory.city', $data);
     }
 
-    /**
-     * Página de listagem de CNAEs: /empresas/atividades
-     */
-    public function cnaeIndex()
+    public function cnaeIndex(Request $request)
     {
-        // Lista paginada de todas as atividades
-        $cnaes = Cnae::withCount('estabelecimentos')
-                        ->orderBy('estabelecimentos_count', 'desc')
-                        ->paginate(100);
+        $currentPage = $request->input('page', 1);
+        $cacheKey = "cnae_index_page_{$currentPage}";
+        $cacheDuration = 60 * 24;
+
+        // Lista paginada de todas as atividades com contagem de estabelecimentos
+        $cnaes = Cache::remember($cacheKey, $cacheDuration, function () {
+            return Cnae::withCount('estabelecimentos')
+                        ->orderByDesc('estabelecimentos_count')
+                        ->paginate(50);
+        });
 
         return view('pages.directory.cnae_list', compact('cnaes'));
     }
 
-    /**
-     * Página de empresas por CNAE: /empresas/atividades/restaurantes
-     */
-    public function byCnae(string $cnae_slug)
+    public function cnaeTest(int $codigo_cnae)
     {
-        $cnae = Cnae::where('descricao', 'LIKE', str_replace('-', ' ', $cnae_slug))->firstOrFail();
+        try {
+            // Tenta encontrar o CNAE usando a chave primária
+            $cnae = \App\Models\Cnae::findOrFail($codigo_cnae);
 
-        $empresas = Estabelecimento::where('cnae_fiscal_principal', $cnae->id)
-                                    ->with('empresa')
-                                    ->orderBy('data_inicio_atividade', 'desc')
-                                    ->paginate(50);
-        
-        return view('pages.directory.cnae_show', compact('empresas', 'cnae'));
+            // Se encontrar, mostra os dados e para a execução.
+            dd($cnae->toArray());
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            
+            // Se não encontrar, nos dá uma mensagem de erro clara.
+            return response('CNAE não encontrado no banco de dados com o código: ' . $codigo_cnae, 404);
+        }
+    }
+
+    public function byCnae(Request $request, int $codigo_cnae)
+    {
+        // Passo 1: Busca o CNAE. Se não encontrar, o findOrFail já gera o 404.
+        $cnae = Cnae::findOrFail($codigo_cnae);
+
+        // Passo 2: Busca as empresas. Esta consulta é mais robusta.
+        $empresas = Estabelecimento::with(['empresa', 'municipio'])
+            ->join('empresas', 'estabelecimentos.cnpj_basico', '=', 'empresas.cnpj_basico')
+            ->where('estabelecimentos.cnae_fiscal_principal', $codigo_cnae)
+            ->where('estabelecimentos.situacao_cadastral', '2')
+            ->orderByDesc('empresas.capital_social')
+            ->select('estabelecimentos.*')
+            ->paginate(50);
+
+        // Passo 3: Busca as estatísticas.
+        $topEstados = Estabelecimento::select('uf', DB::raw('count(*) as total'))
+            ->where('cnae_fiscal_principal', $codigo_cnae)
+            ->where('uf', '!=', 'EX')
+            ->groupBy('uf')
+            ->orderByDesc('total')
+            ->take(5)
+            ->get();
+
+        // Passo 4: Junta tudo em um array de dados.
+        $data = [
+            'cnae' => $cnae,
+            'empresas' => $empresas,
+            'topEstados' => $topEstados,
+        ];
+
+        // Passo 5: Envia os dados para a view.
+        return view('pages.directory.xuxu', $data);
     }
 
     /**
