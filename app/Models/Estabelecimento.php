@@ -70,4 +70,42 @@ class Estabelecimento extends Model // DEFINIÇÃO DA CLASSE ESTABELECIMENTO
     {
         return $this->belongsTo(Cnae::class, 'cnae_fiscal_principal', 'codigo'); // RETORNA O RELACIONAMENTO
     }
+    
+    // Accessor para o CNPJ completo (para a URL)
+    public function getCnpjCompletoAttribute(): string
+    {
+        // CORREÇÃO APLICADA AQUI:
+        // Preenche cada parte com zeros à esquerda para garantir o tamanho correto.
+        $base = str_pad($this->cnpj_basico, 8, '0', STR_PAD_LEFT);
+        $ordem = str_pad($this->cnpj_ordem, 4, '0', STR_PAD_LEFT);
+        $dv = str_pad($this->cnpj_dv, 2, '0', STR_PAD_LEFT);
+
+        return $base . $ordem . $dv;
+    }
+
+    // Accessor para o CNPJ formatado (para exibição)
+    public function getCnpjCompletoFormatadoAttribute(): string
+    {
+        $cnpj = $this->getCnpjCompletoAttribute(); // Usa o método de cima
+        
+        if (strlen($cnpj) !== 14) {
+            return $cnpj; // Retorna o CNPJ sem formatação se não tiver 14 dígitos
+        }
+
+        return sprintf('%s.%s.%s/%s-%s',
+            substr($cnpj, 0, 2),
+            substr($cnpj, 2, 3),
+            substr($cnpj, 5, 3),
+            substr($cnpj, 8, 4),
+            substr($cnpj, 12, 2)
+        );
+    }
+
+    // Accessor para data formatada
+    public function getDataInicioAtividadeFormatadaAttribute(): ?string
+    {
+        return $this->data_inicio_atividade ? 
+            date('d/m/Y', strtotime($this->data_inicio_atividade)) : 
+            'Não informado';
+    }
 }

@@ -4,7 +4,7 @@
     'sticky' faz a barra lateral "flutuar" e acompanhar o scroll da página.
     'top-24' (20 do header + 4 de margem) garante que ela pare abaixo do cabeçalho.
 --}}
-<div class="sticky top-24">
+<div>
     <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Realizar Nova Consulta</h3>
         
