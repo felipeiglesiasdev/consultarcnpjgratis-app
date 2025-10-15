@@ -11,9 +11,6 @@ export default {
                 'custom-green': '#7fdea0', // Adicione esta linha
                 'custom-green-hover': '#94f4a6', // E esta para o hover
             },
-      fontFamily: {
-        sans: ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-      },
     },
   },
   plugins: [],
