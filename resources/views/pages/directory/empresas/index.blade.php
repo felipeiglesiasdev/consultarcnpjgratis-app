@@ -11,11 +11,11 @@
             Explore o Mapa de Empresas do Brasil
         </h1>
 
-        <x-directory.states-section :estados="$estados" />
+        <x-directory.empresas.states-section :estados="$estados" />
 
-        <x-directory.cnaes-section :topCnaes="$topCnaes" />
+        <x-directory.empresas.cnaes-section :topCnaes="$topCnaes" />
 
-        <x-directory.other-explorations :status="$status" />
+        <x-directory.empresas.other-explorations :status="$status" />
 
 
     </div>

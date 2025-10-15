@@ -21,7 +21,7 @@ class Cnae extends Model // DEFINIÇÃO DA CLASSE CNAE
     // RELACIONAMENTO 1-N
     public function estabelecimentos(): HasMany
     {
-        return $this->hasMany(Estabelecimento::class, 'cnae_fiscal_principal', 'codigo'); // RETORNA O RELACIONAMENTO
+        return $this->hasMany(Estabelecimento::class, 'cnae_fiscal_principal', 'codigo');
     }
 
     public function getCodigoFormatadoAttribute(): string

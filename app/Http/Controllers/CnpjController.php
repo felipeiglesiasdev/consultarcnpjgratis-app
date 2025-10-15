@@ -277,7 +277,15 @@ class CnpjController extends Controller
 
     private function formatarCnae(string $codigo): string
     {
-        return vsprintf('%s%s%s%s-%s/%s%s', str_split($codigo));
+       $codigo = str_pad($codigo, 7, '0', STR_PAD_LEFT); // Garante que o código tenha 7 dígitos
+        
+        // Formata para o padrão visual
+        return sprintf('%s.%s-%s/%s',
+            substr($codigo, 0, 2), // Seção
+            substr($codigo, 2, 2), // Divisão
+            substr($codigo, 4, 1), // Grupo
+            substr($codigo, 5, 2)  // Classe
+        );
     }
 
     private function traduzirPorte(int $codigoPorte): string
