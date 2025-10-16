@@ -35,15 +35,17 @@ class DirectoryController extends Controller
 
      public function byCity(Request $request, string $uf, string $cidade_slug)
     {
-        // A variável $uf já vem minúscula da URL
         $currentPage = $request->input('page', 1);
-        // A chave de cache deve ser exatamente a mesma que o robô usa
-        $cacheKey = "city_page_data_v3_{$uf}_{$cidade_slug}_page_{$currentPage}";
+        
+        // A chave de cache agora inclui o número da página
+        $cacheKey = "city_page_data_v4_{$uf}_{$cidade_slug}_page_{$currentPage}";
+
         $data = Cache::get($cacheKey);
+
         if (!$data) {
             abort(404, 'Página não encontrada ou não pré-cacheada.');
         }
-        // Adiciona a UF em maiúsculas, que a view precisa para os títulos e lógicas
+
         $data['uf'] = strtoupper($uf);
         return view('pages.directory.municipios.city', $data);
     }
@@ -98,5 +100,6 @@ class DirectoryController extends Controller
         return view('pages.directory.status.status_show', $data);
     }
 
+    
 
 }

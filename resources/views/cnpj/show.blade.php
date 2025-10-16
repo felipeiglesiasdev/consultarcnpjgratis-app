@@ -15,7 +15,7 @@
             {{-- ALTERADO: de lg:col-span-3 para lg:col-span-4 para aumentar a largura --}}
             <aside class="lg:col-span-4 mb-8 lg:mb-0">
                 <x-cnpj.sidebar :data="$data" />
-                <x-cnpj.consulta-detalhada-sidebar :data="$data" />
+                
 
             </aside>
 

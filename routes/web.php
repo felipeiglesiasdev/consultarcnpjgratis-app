@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\CnpjController;
+use App\Http\Controllers\HomeController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DirectoryController;
 
@@ -11,9 +13,7 @@ use App\Http\Controllers\DirectoryController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return view('pages.home');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/politica-de-privacidade', [LegalController::class, 'privacy'])->name('privacy.policy');
 

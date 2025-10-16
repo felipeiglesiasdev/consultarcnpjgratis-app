@@ -13,7 +13,7 @@
 @endphp
 
 <section>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
         
         <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 border border-gray-200">
             <h3 class="text-2xl font-bold text-gray-800 mb-5">

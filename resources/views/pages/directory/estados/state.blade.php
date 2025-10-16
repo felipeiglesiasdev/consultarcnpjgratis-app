@@ -12,9 +12,9 @@
     $nomeEstado = $nomesEstados[$uf] ?? $uf;
 
     // Define as variáveis de SEO para esta página
-    $title = "Empresas em {$nomeEstado} ({$uf}) - Cidades, Status e CNAEs";
-    $description = "Análise de empresas em {$nomeEstado}. Navegue por cidade, filtre por situação cadastral e veja as principais atividades econômicas (CNAEs).";
-    $keywords = "empresas em {$nomeEstado}, empresas em {$uf}, lista de empresas {$nomeEstado}, cnae {$nomeEstado}, cnpj {$nomeEstado}";
+    $title = "Consultar Empresas em {$nomeEstado} ({$uf}) - Cidades, Status e CNAEs";
+    $description = "Consultar empresas em {$nomeEstado}. Navegue por cidade, filtre por situação cadastral e veja as principais atividades econômicas (CNAEs).";
+    $keywords = "empresas em {$nomeEstado}, empresas em {$uf}, lista de empresas {$nomeEstado}, cnae {$nomeEstado}, cnpj {$nomeEstado}, cnpjs em {$nomeEstado}";
 
     // Define os breadcrumbs
     $breadcrumbs = [
@@ -33,13 +33,13 @@
 @endpush
 
 @section('content')
-<div class="bg-gray-50/50">
+<div class="bg-gray-50/50 mt-16">
     <div class="container mx-auto px-4 py-12 md:py-16">
 
         <x-directory.breadcrumbs :breadcrumbs="$breadcrumbs" />
         <div class="text-center mb-16">
             <h1 class="text-4xl lg:text-5xl font-extrabold text-gray-800">
-                Análise de Empresas em {{ $nomeEstado }}
+                Consulte Empresas em {{ $nomeEstado }}
             </h1>
             <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
                 Explore dados sobre o ambiente de negócios no estado, navegue por cidades ou filtre por situação cadastral.
