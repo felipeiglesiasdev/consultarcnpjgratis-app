@@ -19,7 +19,7 @@
 @endpush
 
 @section('content')
-<div class="bg-gray-50/50">
+<div class="bg-gray-50/50 mt-16">
     <div class="container mx-auto px-4 py-12 md:py-16">
 
         <x-directory.breadcrumbs :breadcrumbs="$breadcrumbs" />

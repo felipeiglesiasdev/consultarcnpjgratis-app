@@ -11,7 +11,7 @@
 @section('description', 'Pesquise em tempo real por código ou descrição da atividade econômica (CNAE) para encontrar empresas por setor.')
 
 @section('content')
-<div class="bg-gray-50/50">
+<div class="bg-gray-50/50 mt-16">
     <div class="container mx-auto px-4 py-12 md:py-16"
          {{-- Início do componente Alpine.js --}}
          x-data='{
