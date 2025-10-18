@@ -2,128 +2,81 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Estabelecimento;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
+use Spatie\Sitemap\Sitemap;
+use Spatie\Sitemap\SitemapIndex;
+use Spatie\Sitemap\Tags\Url;
+use App\Models\Estabelecimento;
+use App\Models\Municipio;
+use App\Models\Cnae;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class GenerateSitemap extends Command
 {
-    protected $signature = 'sitemap:generate {--limit=0 : Limita o número total de CNPJs a serem incluídos. 0 para todos.}';
-    protected $description = 'Gera os arquivos de sitemap estáticos na pasta /public';
-    private $limitPerFile = 15; // Máximo de URLs por arquivo XML
+    protected $signature = 'sitemap:generate';
+    protected $description = 'Gera o sitemap completo do site, incluindo páginas estáticas, diretórios e CNPJs.';
 
     public function handle()
     {
-        $this->info('Iniciando a geração do sitemap...');
-        $publicPath = public_path();
-        $sitemapsPath = $publicPath . '/sitemaps';
+        $this->info('🚀 Iniciando a geração completa do sitemap...');
 
-        if (!File::isDirectory($sitemapsPath)) {
-            File::makeDirectory($sitemapsPath, 0755, true);
+        $sitemapIndexPath = public_path('sitemap_index.xml');
+        $sitemapIndex = SitemapIndex::create();
+
+
+        // --- 2. SITEMAP DAS PÁGINAS DE ESTADO E STATUS (poucas páginas, cabem em um arquivo) ---
+        $this->line("\n[2/5] Gerando sitemap para estados e status...");
+        $directorySitemap = Sitemap::create();
+        // Adiciona todos os estados
+        $states = Estabelecimento::select('uf')->where('uf', '!=', 'EX')->distinct()->get();
+        foreach ($states as $state) {
+            $directorySitemap->add(Url::create(route('empresas.state', ['uf' => strtolower($state->uf)]))->setPriority(0.8)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
         }
-
-        $totalLimit = (int) $this->option('limit');
-        if ($totalLimit > 0) {
-            $this->warn("AVISO: O sitemap será gerado com um limite de {$totalLimit} empresas.");
+        // Adiciona todos os status
+        $statusSlugs = ['ativas', 'suspensas', 'inaptas', 'baixadas', 'nulas'];
+        foreach ($statusSlugs as $slug) {
+            $directorySitemap->add(Url::create(route('empresas.status', ['status_slug' => $slug]))->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
         }
+        $directorySitemap->writeToFile(public_path('sitemaps/directory.xml'));
+        $sitemapIndex->add('/sitemaps/directory.xml');
+        $this->info('Sitemap de estados e status gerado.');
 
-        //$this->generatePagesSitemap($sitemapsPath);
-        $cnpjSitemapFiles = $this->generateCnpjsSitemaps($sitemapsPath, $totalLimit);
-        $this->generateSitemapIndex($publicPath, $cnpjSitemapFiles);
+        // --- 3. SITEMAPS DAS PÁGINAS DE MUNICÍPIO (dividido em chunks) ---
+        $this->line("\n[3/5] Gerando sitemaps para municípios...");
+        Municipio::has('estabelecimentos')->select('id', 'descricao')->chunk(20000, function ($municipios, $index) use ($sitemapIndex) {
+            $municipioSitemap = Sitemap::create();
+            foreach ($municipios as $municipio) {
+                // Descobre a UF associada para montar a URL correta
+                $ufResult = Estabelecimento::where('municipio', $municipio->codigo)->select('uf')->first();
+                if ($ufResult) {
+                    $municipioSitemap->add(Url::create(route('empresas.city', ['uf' => strtolower($ufResult->uf), 'cidade_slug' => Str::slug($municipio->descricao)]))->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
+                }
+            }
+            $fileName = "sitemaps/cities-{$index}.xml";
+            $municipioSitemap->writeToFile(public_path($fileName));
+            $sitemapIndex->add($fileName);
+        });
+        $this->info('Sitemaps de municípios gerados.');
 
-        $this->info('Geração do sitemap concluída com sucesso!');
-        $this->comment("Os arquivos foram salvos na sua pasta 'public'.");
+        // --- 4. SITEMAPS DAS PÁGINAS DE CNAE (dividido em chunks) ---
+        $this->line("\n[4/5] Gerando sitemaps para CNAEs...");
+        Cnae::select('codigo')->chunk(20000, function ($cnaes, $index) use ($sitemapIndex) {
+            $cnaeSitemap = Sitemap::create();
+            foreach ($cnaes as $cnae) {
+                $cnaeSitemap->add(Url::create(route('empresas.cnae.show', ['codigo_cnae' => $cnae->codigo]))->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
+            }
+            $fileName = "sitemaps/cnaes-{$index}.xml";
+            $cnaeSitemap->writeToFile(public_path($fileName));
+            $sitemapIndex->add($fileName);
+        });
+        $this->info('Sitemaps de CNAEs gerados.');
+
+        
+        // --- FINALIZAÇÃO: Escreve o arquivo de índice principal ---
+        $sitemapIndex->writeToFile($sitemapIndexPath);
+
+        $this->info("\n✅ Sitemap Index gerado com sucesso em {$sitemapIndexPath}");
         return 0;
     }
-
-    private function generatePagesSitemap($path)
-    {
-
-    }
-
-    private function generateCnpjsSitemaps($path, int $totalLimit)
-    {
-        $this->line('Iniciando geração dos sitemaps de CNPJs...');
-        $files = [];
-        $recordCount = 0;
-        $page = 1;
-
-        // **CORREÇÃO APLICADA AQUI**
-        // Removida a seleção da coluna 'updated_at' que não existe.
-        $query = Estabelecimento::select('cnpj_basico', 'cnpj_ordem', 'cnpj_dv');
-
-        if ($totalLimit > 0) {
-            $query->limit($totalLimit);
-        }
-
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
-        
-        $lastmod = now()->format('Y-m-d');
-
-        foreach ($query->cursor() as $estabelecimento) {
-            // Monta o CNPJ completo
-            $cnpjCompleto = $estabelecimento->cnpj_basico . $estabelecimento->cnpj_ordem . $estabelecimento->cnpj_dv;
-            
-            // **CORREÇÃO APLICADA AQUI**
-            // Usa a data atual como fallback seguro para o lastmod.
-            $this->addUrl($xml, route('cnpj.show', ['cnpj' => $cnpjCompleto]), $lastmod, 'monthly', '0.5');
-            $recordCount++;
-
-            // Se atingir o limite por arquivo, salva o arquivo e começa um novo
-            if ($recordCount % $this->limitPerFile === 0) {
-                $fileName = "cnpjs-{$page}.xml";
-                file_put_contents($path . '/' . $fileName, $xml->asXML());
-                $files[] = 'sitemaps/' . $fileName;
-                
-                $this->info("Arquivo {$fileName} gerado com {$this->limitPerFile} URLs.");
-                
-                $page++;
-                // Reseta o XML para o próximo arquivo
-                $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
-            }
-        }
-
-        // Salva o último arquivo se ele tiver algum registro
-        if ($recordCount % $this->limitPerFile !== 0 && $recordCount > 0) {
-            $fileName = "cnpjs-{$page}.xml";
-            file_put_contents($path . '/' . $fileName, $xml->asXML());
-            $files[] = 'sitemaps/' . $fileName;
-            $this->info("Arquivo final {$fileName} gerado com " . ($recordCount % $this->limitPerFile) . " URLs.");
-        }
-
-        $this->info('Sitemaps de CNPJs gerados.');
-        return $files;
-    }
-
-    private function generateSitemapIndex($path, $cnpjSitemapFiles)
-    {
-        $this->line('Gerando o sitemap index principal...');
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></sitemapindex>');
-
-        //$this->addSitemap($xml, url('sitemaps/paginas.xml'));
-
-        foreach ($cnpjSitemapFiles as $file) {
-            $this->addSitemap($xml, url($file));
-        }
-        
-        file_put_contents($path . '/sitemap.xml', $xml->asXML());
-        $this->info('Sitemap index gerado.');
-    }
-
-    private function addSitemap(\SimpleXMLElement $xml, string $url)
-    {
-        $sitemapNode = $xml->addChild('sitemap');
-        $sitemapNode->addChild('loc', $url);
-        $sitemapNode->addChild('lastmod', now()->format('Y-m-d'));
-    }
-
-    private function addUrl(\SimpleXMLElement $xml, string $url, string $lastmod, string $changefreq, string $priority)
-    {
-        $urlNode = $xml->addChild('url');
-        $urlNode->addChild('loc', $url);
-        $urlNode->addChild('lastmod', $lastmod);
-        $urlNode->addChild('changefreq', $changefreq);
-        $urlNode->addChild('priority', $priority);
-    }
 }
-

@@ -81,7 +81,7 @@
         <div x-show="searchTerm.length < 2" x-transition>
             <div class="text-center mb-10">
                 <h2 class="text-3xl font-bold text-gray-800">Principais Setores em Atividade no Brasil</h2>
-                <p class="mt-2 text-gray-600">As 3 atividades econômicas com o maior número de empresas ativas no país.</p>
+                <p class="mt-2 text-gray-600">As 10 atividades econômicas com o maior número de empresas ativas no país.</p>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 @foreach($topCnaes as $cnae)

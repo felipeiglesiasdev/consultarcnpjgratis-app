@@ -6,7 +6,7 @@
 @endsection
 
 @section('content')
-<div class="bg-gray-50 py-12">
+<div class="bg-gray-50 py-12 mt-16">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         {{-- Layout de Grid com espaçamento --}}
         <div class="grid grid-cols-1 lg:grid-cols-12 lg:gap-8">
