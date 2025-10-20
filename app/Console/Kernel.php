@@ -15,10 +15,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // ADICIONE ESTA LINHA
-        // Ela diz ao Laravel para executar o comando 'sitemap:generate'
-        // todos os dias, à 1:00 da manhã.
-        $schedule->command('sitemap:generate')->dailyAt('01:00');
+        // ATUALIZE ESTA LINHA:
+        $schedule->command('sitemap:generate-directory')->daily();
     }
 
     /**

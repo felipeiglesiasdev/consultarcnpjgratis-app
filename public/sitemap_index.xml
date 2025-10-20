@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <sitemap>
+        <loc>https://www.consultarcnpjgratis.com/sitemaps/estados-status.xml</loc>
+            <lastmod>2025-10-20T14:14:45+00:00</lastmod>
+    </sitemap>
+    <sitemap>
+        <loc>https://www.consultarcnpjgratis.com/sitemaps/municipios.xml</loc>
+            <lastmod>2025-10-20T14:14:51+00:00</lastmod>
+    </sitemap>
+    <sitemap>
+        <loc>https://www.consultarcnpjgratis.com/sitemaps/atividades.xml</loc>
+            <lastmod>2025-10-20T14:14:51+00:00</lastmod>
+    </sitemap>
+</sitemapindex>
