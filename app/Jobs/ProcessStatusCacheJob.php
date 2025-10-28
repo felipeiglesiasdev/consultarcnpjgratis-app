@@ -33,7 +33,7 @@ class ProcessStatusCacheJob implements ShouldQueue
 
         Cache::remember($cacheKey, now()->addMonths(3), function () use ($info) {
             $statusCode = $info['codigo'];
-            $stateCounts = DB::connection((new Estabelecimento())->getConnectionName())->table('estabelecimentos')->select('uf', DB::raw('count(*) as total'))->where('situacao_cadastral', $statusCode)->where('uf', '!=', 'EX')->groupBy('uf')->orderBy('uf')->pluck('total', 'uf');
+            $stateCounts = DB::connection((new Estabelecimento())->getConnectionName())->table('estabelecimentos')->select('uf', DB::raw('count(*) as total'))->where('uf', '!=', 'EX')->where('situacao_cadastral', $statusCode)->groupBy('uf')->orderBy('uf')->pluck('total', 'uf');
             $topCnaes = Cnae::select('cnaes.codigo', 'cnaes.descricao', DB::raw('count(*) as total'))->join('estabelecimentos', 'cnaes.codigo', '=', 'estabelecimentos.cnae_fiscal_principal')->where('estabelecimentos.situacao_cadastral', $statusCode)->groupBy('cnaes.codigo', 'cnaes.descricao')->orderByDesc('total')->limit(5)->get();
             $randomCompanies = Estabelecimento::with(['empresa', 'municipioRel'])->where('situacao_cadastral', $statusCode)->inRandomOrder()->limit(100)->get();
             return compact('stateCounts', 'topCnaes', 'randomCompanies');

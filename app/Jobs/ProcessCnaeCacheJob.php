@@ -32,8 +32,8 @@ class ProcessCnaeCacheJob implements ShouldQueue
         Cache::remember($cacheKey, now()->addMonths(3), function () use ($codigo_cnae, $cnae) {
             $empresas = Estabelecimento::with(['empresa', 'municipioRel'])
                 ->join('empresas', 'estabelecimentos.cnpj_basico', '=', 'empresas.cnpj_basico')
-                ->where('estabelecimentos.cnae_fiscal_principal', $codigo_cnae)
                 ->where('estabelecimentos.situacao_cadastral', '2') // Apenas ativas
+                ->where('estabelecimentos.cnae_fiscal_principal', $codigo_cnae)
                 ->select('estabelecimentos.*')
                 ->orderByDesc('empresas.capital_social')
                 ->limit(50)

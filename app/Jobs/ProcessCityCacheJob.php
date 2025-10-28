@@ -35,9 +35,9 @@ class ProcessCityCacheJob implements ShouldQueue
         $uf = $firstEstabelecimento->uf;
         $cidade_slug = Str::slug($municipio->descricao);
 
-        $totalEmpresasAtivas = Estabelecimento::where('municipio', $municipio->codigo)
-            ->where('uf', $uf)
+        $totalEmpresasAtivas = Estabelecimento::where('uf', $uf)
             ->where('situacao_cadastral', '2')
+            ->where('municipio', $municipio->codigo)
             ->count();
         
         if ($totalEmpresasAtivas === 0) return;
@@ -56,9 +56,9 @@ class ProcessCityCacheJob implements ShouldQueue
                 // 1. Busca apenas os itens para a página atual
                 $itemsForThisPage = Estabelecimento::with('empresa')
                     ->join('empresas', 'estabelecimentos.cnpj_basico', '=', 'empresas.cnpj_basico')
-                    ->where('estabelecimentos.municipio', $municipio->codigo)
                     ->where('estabelecimentos.uf', $uf)
                     ->where('estabelecimentos.situacao_cadastral', '2')
+                    ->where('estabelecimentos.municipio', $municipio->codigo)
                     ->orderByDesc('empresas.capital_social')
                     ->select('estabelecimentos.*')
                     ->forPage($page, 50) // Pega os 50 itens da página correta
